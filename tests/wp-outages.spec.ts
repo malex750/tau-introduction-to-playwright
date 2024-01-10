@@ -1,40 +1,30 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { OutagesHomePage } from './pages/outages';
 
 const URL = 'https://www.westernpower.com.au/outages/';
 let outagesHomePage: OutagesHomePage;
 
 test.beforeEach(async ({ page }) => {
+  test.setTimeout(120000); // Raising timeout as these pages are WAY too slow
   await page.goto(URL);
   outagesHomePage = new OutagesHomePage(page);
 });
 
-async function clickShowMyLocation() {
-  await outagesHomePage.clickShowMyLocation();
-}
-
 test.describe('Outages Homepage', () => {
-  /*
-  test('has title', async () => {
-    await outagesHomePage.assertPageTitle();
+  test('search for suburb', async ({ page }) => {
+    await outagesHomePage.enterSuburb('singleton');
+    await page.getByText('Singleton, Western Australia').click();
+    await expect(page.getByText('Report outage')).toBeVisible();
+    await page.screenshot({ path: './test-results/screenshots/search_for_suburb_screenshot.png' });
   });
 
-  test('get started link', async ({ page }) => {
-    // Act
-    await clickShowMyLocation(page);
-    // Assert
-  });
-
-  test('enter suburb', async ({ page }) => {
-    await page.getByRole('textbox', { name: 'lookupAddressFull' }).fill('singleton');
-  });
-*/
-
-  // OK, not sure how to navigate this outages form
-  test('enter your suburb', async ({ page }) => {
-    await page.locator('input[name="lookupAddressFull"]').fill('singleton');
-    await page.locator('input[name="lookupAddressFull"]').click();
-    await page.keyboard.press('Enter');
-    await expect(page.getByText('Singleton')).toBeVisible();
+  test('search for miss-spelled suburb', async ({ page }) => {
+    await outagesHomePage.enterSuburb('gfgggffdhsdfh');
+    await expect(page.getByText('No results found')).toBeVisible();
+    await page.screenshot({ path: './test-results/screenshots/search_for_miss_spelled_suburb_screenshot.png' });
+    /* If the form is submitted before the context search resolves then we get an orange warning box
+    'Selected location is outside Western Power network boundary.'. The behaviour is different after
+    the context completes.
+    */
   });
 });

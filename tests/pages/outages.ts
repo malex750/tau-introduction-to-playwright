@@ -21,7 +21,10 @@ export class OutagesHomePage {
     await expect(this.page).toHaveTitle(this.pageTitle);
   }
 
-  async enterSuburb() {
+  async enterSuburb(fill: string) {
+    await this.page.getByPlaceholder('Enter your suburb').click();
+    await this.page.getByPlaceholder('Enter your suburb').fill(fill);
+    await this.page.getByPlaceholder('Enter your suburb').press('Enter');
   }
 }
 
